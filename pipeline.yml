@@ -3,7 +3,9 @@ resources:
   type: git
   source:
     uri: https://github.com/ndeo041/terra-sky.git
-    branch: main
+    branch: master
+    username: ((github-username))
+    password: ((github-token))
 
 - name: lambda-artifact
   type: s3
