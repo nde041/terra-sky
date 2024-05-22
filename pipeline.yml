@@ -2,13 +2,13 @@ resources:
 - name: lambda-repo
   type: git
   source:
-    uri: https://github.com/yourusername/your-lambda-repo.git
+    uri: https://github.com/ndeo041/terra-sky.git
     branch: main
 
 - name: lambda-artifact
   type: s3
   source:
-    bucket: your-bucket-name
+    bucket: skystrfr
     access_key_id: ((aws-access-key-id))
     secret_access_key: ((aws-secret-access-key))
     aws_session_token: ((aws_session_token_id))
