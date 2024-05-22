@@ -1,0 +1,62 @@
+resources:
+- name: lambda-repo
+  type: git
+  source:
+    uri: https://github.com/yourusername/your-lambda-repo.git
+    branch: main
+
+- name: lambda-artifact
+  type: s3
+  source:
+    bucket: your-bucket-name
+    access_key_id: ((aws-access-key-id))
+    secret_access_key: ((aws-secret-access-key))
+    aws_session_token: ((aws_session_token_id))
+    region_name: ((aws-region))
+
+jobs:
+- name: build-and-deploy-lambda
+  plan:
+  - get: lambda-repo
+    trigger: true
+  - task: build-lambda-zip
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: python
+          tag: '3.8'
+      inputs:
+        - name: lambda-repo
+      outputs:
+        - name: lambda-artifact
+      run:
+        path: sh
+        args:
+          - -exc
+          - |
+            cd lambda-repo
+            zip -r ../lambda_artifact/lambda_function.zip .
+  - put: lambda-artifact
+    params:
+      file: lambda_artifact/lambda_function.zip
+  - task: deploy-lambda
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: hashicorp/terraform
+          tag: '1.0.0'
+      inputs:
+        - name: lambda-repo
+        - name: lambda-artifact
+      run:
+        path: sh
+        args:
+          - -exc
+          - |
+            cd lambda-repo/terraform
+            terraform init
+            terraform apply -auto-approve -var "lambda_zip_file=../lambda_artifact/lambda_function.zip"
